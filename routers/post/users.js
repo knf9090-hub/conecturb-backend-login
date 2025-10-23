@@ -1,6 +1,7 @@
 const Database = require('../../src/Database/mainDatabase');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 module.exports = async function createUser(req, res) {
   try {
@@ -25,17 +26,20 @@ module.exports = async function createUser(req, res) {
   
     const token = jwt.sign(
       { id: userId },
-      "chavedeAssisnaturaRefres",
+      process.env.JWT_TOKEN || "chavedeAssisnaturaRefres",
       { expiresIn: '25m' }
     );
 
-    const refreshToken = await jwt.sign(
+    const refreshToken = jwt.sign(
       { id: userId },
-      "chavedeAssinaturaRefres",
+      process.env.JWT_REFRESHTK || "chavedeAssinaturaRefres",
       { expiresIn: '7d' }
     );
     
     await Database.query('UPDATE Users SET refreshToken = ? WHERE id = ?', [refreshToken, userId])
+
+
+    //cabe ao gateway enviar res.cookie para o cliente, mas podemos testar.
 
     return res.status(201).json({
       message: 'Usuário criado com sucesso!',
